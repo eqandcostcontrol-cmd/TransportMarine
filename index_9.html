@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจองรถออนไลน์ | ITD Marine J.0444</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+
+  :root{
+    --navy:#0F2439;
+    --steel:#1B3A5C;
+    --steel-light:#2C5177;
+    --amber:#E8A33D;
+    --orange:#D9622B;
+    --green:#2F7D5C;
+    --green-bg:#E7F3EC;
+    --red:#C0392B;
+    --red-bg:#FBEAE8;
+    --amber-bg:#FCF1DF;
+    --blue-bg:#E8EEF5;
+    --bg:#F2F4F7;
+    --card:#FFFFFF;
+    --border:#DDE3E9;
+    --muted:#5C6B7A;
+    --text:#182430;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Sarabun',sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    background:linear-gradient(135deg,var(--navy),var(--steel));
+    color:#fff;
+    padding:22px 24px 20px;
+  }
+  .topbar-inner{max-width:1080px;margin:0 auto;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .brand-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:var(--amber);
+    text-transform:uppercase;
+    margin:0 0 4px;
+  }
+  .topbar h1{
+    margin:0;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:.2px;
+  }
+  .role-switch{display:flex;gap:6px;background:rgba(255,255,255,.08);padding:4px;border-radius:10px;}
+  .role-btn{
+    border:none;background:transparent;color:rgba(255,255,255,.75);
+    font-family:'Sarabun',sans-serif;font-size:13.5px;font-weight:600;
+    padding:9px 14px;border-radius:7px;cursor:pointer;transition:.15s;
+    white-space:nowrap;
+  }
+  .role-btn:hover{color:#fff;}
+  .role-btn.active{background:#fff;color:var(--navy);}
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:1080px;margin:0 auto;padding:24px;}
+  .panel{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:20px 22px;
+    margin-bottom:20px;
+  }
+  .panel h2{
+    margin:0 0 4px;
+    font-size:17px;
+    font-weight:700;
+  }
+  .panel .sub{color:var(--muted);font-size:13px;margin:0 0 16px;}
+
+  /* ---------- Fleet board ---------- */
+  .fleet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .refresh-btn{
+    border:1px solid var(--border);background:#fff;color:var(--steel);
+    font-family:'Sarabun',sans-serif;font-weight:600;font-size:12.5px;
+    padding:7px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;
+  }
+  .refresh-btn:hover{background:var(--bg);}
+  .fleet-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+    gap:12px;
+  }
+  .plate-card{
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 14px 12px;
+    position:relative;
+    background:#fff;
+  }
+  .plate-card.status-available{border-color:#bfe0cf;}
+  .plate-card.status-busy{border-color:#f0d6a6;}
+  .plate-card.status-maintenance{border-color:#eec1bc;}
+  .led{
+    width:9px;height:9px;border-radius:50%;display:inline-block;margin-left:6px;
+  }
+  .led.status-available{background:var(--green);box-shadow:0 0 0 3px var(--green-bg);}
+  .led.status-busy{background:var(--amber);box-shadow:0 0 0 3px var(--amber-bg);}
+  .led.status-maintenance{background:var(--red);box-shadow:0 0 0 3px var(--red-bg);}
+  .plate-top{display:flex;align-items:center;justify-content:space-between;}
+  .plate-no{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:16px;letter-spacing:.5px;}
+  .plate-type{color:var(--muted);font-size:12.5px;margin-top:3px;}
+  .status-pill{
+    display:inline-block;margin-top:10px;font-size:11.5px;font-weight:700;
+    padding:3px 9px;border-radius:20px;
+  }
+  .status-pill.status-available{background:var(--green-bg);color:var(--green);}
+  .status-pill.status-busy{background:var(--amber-bg);color:#8a5b17;}
+  .status-pill.status-maintenance{background:var(--red-bg);color:var(--red);}
+  .plate-actions{margin-top:10px;display:flex;gap:6px;}
+  .mini-btn{
+    flex:1;border:1px solid var(--border);background:#fff;color:var(--muted);
+    font-family:'Sarabun',sans-serif;font-size:11.5px;font-weight:600;
+    padding:5px 4px;border-radius:6px;cursor:pointer;
+  }
+  .mini-btn:hover{background:var(--bg);}
+  .empty-fleet{color:var(--muted);font-size:13.5px;padding:20px 0;text-align:center;}
+
+  /* ---------- Forms ---------- */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid.full{grid-template-columns:1fr;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.span2{grid-column:1/-1;}
+  label{font-size:12.5px;font-weight:600;color:var(--muted);}
+  input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{
+    font-family:'Sarabun',sans-serif;font-size:14.5px;
+    padding:9px 11px;border:1px solid var(--border);border-radius:8px;
+    background:#fbfcfd;color:var(--text);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--steel-light);outline-offset:1px;}
+  textarea{resize:vertical;min-height:64px;}
+  .radio-row{display:flex;gap:16px;padding-top:4px;}
+  .radio-row label{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--text);font-weight:400;}
+  .primary-btn{
+    background:var(--steel);color:#fff;border:none;font-family:'Sarabun',sans-serif;
+    font-weight:700;font-size:14.5px;padding:11px 20px;border-radius:9px;cursor:pointer;margin-top:6px;
+  }
+  .primary-btn:hover{background:var(--navy);}
+  .primary-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .msg{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:8px;display:none;}
+  .msg.show{display:block;}
+  .msg.ok{background:var(--green-bg);color:var(--green);}
+  .msg.err{background:var(--red-bg);color:var(--red);}
+
+  /* ---------- Booking list / cards ---------- */
+  .search-row{display:flex;gap:10px;margin-bottom:14px;}
+  .search-row input{flex:1;}
+  .booking-card{
+    border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;
+  }
+  .bk-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .bk-title{font-weight:700;font-size:14.5px;}
+  .bk-sub{color:var(--muted);font-size:12.5px;margin-top:2px;}
+  .badge{
+    font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;
+  }
+  .badge.pending{background:var(--amber-bg);color:#8a5b17;}
+  .badge.approved{background:var(--blue-bg);color:var(--steel);}
+  .badge.assigned{background:var(--green-bg);color:var(--green);}
+  .badge.completed{background:#eceff2;color:var(--muted);}
+  .badge.rejected,.badge.cancelled{background:var(--red-bg);color:var(--red);}
+  .bk-detail-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px 14px;
+    margin-top:10px;font-size:13px;
+  }
+  .bk-detail-grid div span{display:block;color:var(--muted);font-size:11px;}
+  .bk-note{margin-top:10px;font-size:13px;background:var(--bg);border-radius:8px;padding:8px 10px;}
+  .bk-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
+  .bk-actions .primary-btn{margin-top:0;padding:8px 14px;font-size:13px;}
+  .bk-actions .ghost-btn{
+    background:#fff;border:1px solid var(--border);color:var(--red);
+    font-family:'Sarabun',sans-serif;font-weight:700;font-size:13px;
+    padding:8px 14px;border-radius:9px;cursor:pointer;
+  }
+  .bk-actions .ghost-btn:hover{background:var(--red-bg);}
+  .assign-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .assign-row select,.assign-row input{flex:1;min-width:140px;}
+  .empty-state{color:var(--muted);font-size:13.5px;text-align:center;padding:26px 0;}
+
+  .name-gate{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .name-gate input{flex:1;min-width:200px;}
+
+  /* ---------- Calendar ---------- */
+  .cal-nav-btn{
+    border:1px solid var(--border);background:#fff;color:var(--steel);
+    font-family:'Sarabun',sans-serif;font-weight:700;font-size:15px;
+    width:32px;height:32px;border-radius:8px;cursor:pointer;
+  }
+  .cal-nav-btn:hover{background:var(--bg);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-dow{text-align:center;font-size:11.5px;font-weight:700;color:var(--muted);padding:2px 0 6px;}
+  .cal-cell{
+    min-height:62px;border:1px solid var(--border);border-radius:8px;padding:6px;
+    cursor:pointer;background:#fff;transition:.1s;
+  }
+  .cal-cell:hover{background:var(--bg);}
+  .cal-cell.other-month{opacity:.35;}
+  .cal-cell.today .cal-daynum{color:var(--steel);text-decoration:underline;}
+  .cal-cell.selected{background:var(--blue-bg);border-color:var(--steel-light);}
+  .cal-daynum{font-size:12.5px;font-weight:600;}
+  .cal-count{
+    display:inline-block;margin-top:5px;font-size:10.5px;font-weight:700;
+    background:var(--amber-bg);color:#8a5b17;padding:2px 7px;border-radius:20px;
+  }
+  @media(max-width:640px){
+    .cal-cell{min-height:44px;padding:4px;}
+    .cal-daynum{font-size:11px;}
+    .cal-count{font-size:9.5px;padding:1px 5px;}
+  }
+
+  .fleet-manage-item{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .fleet-manage-item input,.fleet-manage-item select{flex:1;}
+  .remove-x{
+    border:none;background:var(--red-bg);color:var(--red);width:30px;height:30px;border-radius:8px;
+    cursor:pointer;font-weight:700;
+  }
+
+  @media(max-width:640px){
+    .form-grid{grid-template-columns:1fr;}
+    .topbar h1{font-size:19px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div>
+        <p class="brand-tag">ITD MARINE &middot; J.0444 &middot; TRANSPORT</p>
+        <h1>ระบบจองรถออนไลน์</h1>
+      </div>
+      <div class="role-switch" id="roleSwitch">
+        <button class="role-btn" data-role="requester">ผู้ขอใช้รถ</button>
+        <button class="role-btn" data-role="approver">หัวหน้า Section</button>
+        <button class="role-btn" data-role="officer">เจ้าหน้าที่ทรานสปอร์ต</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="setupWarning" style="display:none;background:#FBEAE8;border:1px solid #f0c4bd;color:#C0392B;padding:12px 16px;border-radius:10px;margin-bottom:18px;font-size:13.5px;">
+    ⚠️ ยังไม่ได้ตั้งค่า APPS_SCRIPT_URL ในไฟล์นี้ ระบบจะยังใช้บันทึก/แชร์ข้อมูลจริงไม่ได้ — ดูขั้นตอนตั้งค่าใน README ที่มาพร้อมไฟล์นี้
+  </div>
+  <div id="dbErrorBanner" style="display:none;background:#FBEAE8;border:1px solid #f0c4bd;color:#C0392B;padding:12px 16px;border-radius:10px;margin-bottom:18px;font-size:13.5px;"></div>
+
+  <div class="panel">
+    <div class="fleet-head">
+      <div>
+        <h2>สถานะรถ ณ ตอนนี้</h2>
+        <p class="sub" style="margin:0;">อัปเดตแบบเรียลไทม์ ข้อมูลนี้เห็นร่วมกันทุกคนที่เปิดหน้านี้</p>
+      </div>
+      <button class="refresh-btn" onclick="refreshAll(true)">⟳ รีเฟรชข้อมูล</button>
+    </div>
+    <div class="fleet-grid" id="fleetGrid"></div>
+  </div>
+
+  <div class="panel">
+    <div class="fleet-head">
+      <div>
+        <h2>ปฏิทินการจอง</h2>
+        <p class="sub" style="margin:0;">คลิกวันที่เพื่อดูรายการจองของวันนั้น</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="cal-nav-btn" id="calPrev">‹</button>
+        <div class="mono" id="calLabel" style="font-weight:700;min-width:120px;text-align:center;"></div>
+        <button class="cal-nav-btn" id="calNext">›</button>
+      </div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div id="calDayList" style="margin-top:16px;"></div>
+  </div>
+
+  <div id="roleView"></div>
+
+</div>
+
+<script>
+/* ===== ตั้งค่าฐานข้อมูล (Google Apps Script Web App URL) =====
+   วาง URL ที่ได้จากขั้นตอน Deploy > New deployment > Web app ตรงนี้
+   ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'          */
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqAx3U_RM3WXevx6PFXtxK4dHW01yRVybz1RqmEYcg2Cxlam-8LxFE5KurGMfakDHA/exec';
+/* ============================================================= */
+
+/* ===== รหัสผ่านสำหรับสลับไปมุมมอง "หัวหน้า Section" / "เจ้าหน้าที่ทรานสปอร์ต" =====
+   เปลี่ยนรหัสตรงนี้ได้ตามต้องการ (หมายเหตุ: เป็นการกันคนเผลอกดเข้าเท่านั้น
+   ไม่ใช่ระบบความปลอดภัยจริง เพราะรหัสอยู่ในไฟล์ HTML ที่ใครก็เปิดดูโค้ดได้)   */
+const ROLE_PIN = {
+  approver: '1234',
+  officer: '0000'
+};
+/* ============================================================= */
+const unlockedRoles = new Set(['requester']);
+
+/* ===== อีเมลแจ้งเตือนเมื่อมีคำขอใช้รถใหม่ =====
+   ต้องเพิ่มโค้ดฝั่ง Google Apps Script (doPost) ให้รองรับ action:'notifyNewBooking'
+   ด้วย ไม่งั้นอีเมลจะไม่ถูกส่งจริง — ดูตัวอย่างโค้ดที่ต้องเพิ่มด้านล่างของไฟล์นี้ (comment)  */
+const NOTIFY_EMAIL_TO = 'eqandcostcontrol@gmail.com';
+/* ============================================================= */
+
+/* ===== รายชื่อพนักงานขับรถสำหรับ dropdown (หน้าเจ้าหน้าที่ทรานสปอร์ต) =====
+   เพิ่ม/แก้ชื่อได้ตรงนี้ — ถ้าไม่มีชื่อในลิสต์ เลือก "ระบุเอง" แล้วพิมพ์เองได้    */
+const DRIVER_LIST = [
+  'นายอำนาจ ค้อมทอง',
+  'นายบุญธรรม รุ่งเรือง'
+];
+/* ============================================================= */
+
+let vehicles = [];
+let bookings = [];
+let role = 'requester';
+let dbReady = APPS_SCRIPT_URL && APPS_SCRIPT_URL.indexOf('https://') === 0;
+
+async function dbGet(key){
+  const res = await fetch(`${APPS_SCRIPT_URL}?key=${encodeURIComponent(key)}`);
+  const text = await res.text();
+  if(!res.ok){
+    throw new Error(`โหลดข้อมูลไม่สำเร็จ (HTTP ${res.status})`);
+  }
+  if(text.trim().startsWith('<')){
+    throw new Error('เซิร์ฟเวอร์ตอบกลับผิดปกติ (อาจเป็นหน้า error ของ Google) — ตรวจสอบการตั้งค่า Deploy ว่า "Who has access" เป็น Anyone');
+  }
+  if(!text || text.trim() === 'null') return null;
+  return JSON.parse(text);
+}
+async function dbSet(key, value){
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'text/plain;charset=utf-8'}, // เลี่ยง CORS preflight
+    body: JSON.stringify({ key, value })
+  });
+  const text = await res.text();
+  if(!res.ok){
+    throw new Error(`บันทึกไม่สำเร็จ (HTTP ${res.status})`);
+  }
+  if(text.trim().startsWith('<')){
+    throw new Error('เซิร์ฟเวอร์ตอบกลับผิดปกติ (อาจเป็นหน้า error ของ Google) — ตรวจสอบการตั้งค่า Deploy ว่า "Who has access" เป็น Anyone');
+  }
+  let parsed;
+  try{ parsed = JSON.parse(text); }catch(e){ throw new Error('บันทึกไม่สำเร็จ: รูปแบบข้อมูลตอบกลับไม่ถูกต้อง'); }
+  if(!parsed || parsed.ok !== true){
+    throw new Error('บันทึกไม่สำเร็จ: เซิร์ฟเวอร์ไม่ยืนยันการบันทึก');
+  }
+  return parsed;
+}
+async function notifyNewBooking(booking){
+  if(!dbReady) return;
+  try{
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({
+        action: 'notifyNewBooking',
+        to: NOTIFY_EMAIL_TO,
+        booking
+      })
+    });
+  }catch(e){
+    // ไม่ต้อง block การส่งคำขอหลัก แค่แจ้งไว้ใน console
+    console.error('send notification email failed', e);
+  }
+}
+function showDbError(msg){
+  const el = document.getElementById('dbErrorBanner');
+  if(!el) return;
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+}
+function clearDbError(){
+  const el = document.getElementById('dbErrorBanner');
+  if(el) el.style.display = 'none';
+}
+
+const STATUS_LABEL = {
+  pending_approval:{text:'รออนุมัติ', cls:'pending'},
+  approved:{text:'รอจัดรถ', cls:'approved'},
+  assigned:{text:'จัดรถแล้ว', cls:'assigned'},
+  completed:{text:'เสร็จสิ้น', cls:'completed'},
+  rejected:{text:'ไม่อนุมัติ', cls:'rejected'},
+  cancelled:{text:'ยกเลิก', cls:'cancelled'}
+};
+const VSTATUS_LABEL = {
+  available:{text:'ว่าง', cls:'status-available'},
+  busy:{text:'กำลังใช้งาน', cls:'status-busy'},
+  maintenance:{text:'ซ่อมบำรุง', cls:'status-maintenance'}
+};
+
+function uid(prefix){ return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+function ymd(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+
+async function loadVehicles(){
+  if(!dbReady){ vehicles = seedVehicles(); return; }
+  try{
+    const stored = await dbGet('vehicles');
+    if(stored){
+      vehicles = stored;
+    } else if(vehicles.length === 0){
+      vehicles = seedVehicles();
+      await saveVehicles();
+    }
+    clearDbError();
+  }catch(e){
+    console.error('load vehicles failed', e);
+    showDbError('โหลดข้อมูลรถไม่สำเร็จ: ' + e.message + ' — กำลังแสดงข้อมูลล่าสุดที่มีอยู่ในเครื่องนี้');
+    // ไม่รีเซ็ต vehicles ทิ้ง เพื่อป้องกันไม่ให้การบันทึกครั้งถัดไปเขียนทับข้อมูลจริงด้วยข้อมูลว่าง/ตัวอย่าง
+  }
+}
+function seedVehicles(){
+  return [
+    {id:uid('veh'), plate:'31-PS0178', type:'อื่นๆ', status:'available'},
+    {id:uid('veh'), plate:'37-EC0291', type:'อื่นๆ', status:'available'},
+    {id:uid('veh'), plate:'37-EC0415', type:'อื่นๆ', status:'available'},
+    {id:uid('veh'), plate:'38-MB0025', type:'อื่นๆ', status:'available'}
+  ];
+}
+async function saveVehicles(){
+  if(!dbReady) return;
+  try{
+    await dbSet('vehicles', JSON.stringify(vehicles));
+    clearDbError();
+  }catch(e){
+    console.error('save vehicles failed', e);
+    alert('บันทึกข้อมูลรถไม่สำเร็จ: ' + e.message);
+    showDbError('บันทึกข้อมูลรถล่าสุดไม่สำเร็จ — กรุณาลองทำรายการนี้ใหม่');
+  }
+}
+async function loadBookings(){
+  if(!dbReady){ bookings = []; return; }
+  try{
+    const stored = await dbGet('bookings');
+    bookings = stored || bookings;
+    clearDbError();
+  }catch(e){
+    console.error('load bookings failed', e);
+    showDbError('โหลดข้อมูลคำขอไม่สำเร็จ: ' + e.message + ' — กำลังแสดงข้อมูลล่าสุดที่มีอยู่ในเครื่องนี้');
+  }
+}
+async function saveBookings(){
+  if(!dbReady) return;
+  try{
+    await dbSet('bookings', JSON.stringify(bookings));
+    clearDbError();
+  }catch(e){
+    console.error('save bookings failed', e);
+    alert('บันทึกคำขอไม่สำเร็จ: ' + e.message);
+    showDbError('บันทึกคำขอล่าสุดไม่สำเร็จ — กรุณาลองทำรายการนี้ใหม่');
+  }
+}
+
+function roleViewHasInput(){
+  const view = document.getElementById('roleView');
+  if(!view) return false;
+  const fields = view.querySelectorAll('input[type=text], input[type=date], input[type=time], input[type=number], textarea');
+  for(const f of fields){
+    if(f.value && f.value.trim() !== '') return true;
+  }
+  const timeH = document.getElementById('f_time_h');
+  const timeM = document.getElementById('f_time_m');
+  if((timeH && timeH.value) || (timeM && timeM.value)) return true;
+  return false;
+}
+
+async function refreshAll(force){
+  await loadVehicles();
+  await loadBookings();
+  renderFleet();
+  if(roleViewHasInput()){
+    if(!force){
+      // auto-refresh in the background: don't wipe out what the person is typing
+      return;
+    }
+    const proceed = confirm('มีข้อมูลที่กำลังกรอกอยู่ในฟอร์ม ถ้ารีเฟรชตอนนี้ข้อมูลที่พิมพ์ไว้จะหายไป ต้องการรีเฟรชต่อไหม?');
+    if(!proceed) return;
+  }
+  renderRole();
+}
+
+/* ---------- Fleet board ---------- */
+function renderFleet(){
+  const grid = document.getElementById('fleetGrid');
+  if(vehicles.length===0){
+    grid.innerHTML = '<div class="empty-fleet">ยังไม่มีรถในระบบ — เพิ่มรถได้จากมุมมองเจ้าหน้าที่ทรานสปอร์ต</div>';
+    return;
+  }
+  grid.innerHTML = vehicles.map(v=>{
+    const st = VSTATUS_LABEL[v.status] || VSTATUS_LABEL.available;
+    return `
+    <div class="plate-card ${st.cls}">
+      <div class="plate-top">
+        <div class="plate-no">${escapeHtml(v.plate)}</div>
+        <span class="led ${st.cls}"></span>
+      </div>
+      <div class="plate-type">${escapeHtml(v.type)}</div>
+      <div class="status-pill ${st.cls}">${st.text}</div>
+      ${role==='officer' ? `
+      <div class="plate-actions">
+        <button class="mini-btn" onclick="setVehicleStatus('${v.id}','available')">ว่าง</button>
+        <button class="mini-btn" onclick="setVehicleStatus('${v.id}','maintenance')">ซ่อม</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+  renderCalendar();
+}
+async function setVehicleStatus(id, status){
+  const v = vehicles.find(x=>x.id===id);
+  if(!v) return;
+  v.status = status;
+  await saveVehicles();
+  renderFleet();
+}
+
+/* ---------- Booking calendar ---------- */
+let calMonth = new Date(); calMonth.setDate(1);
+let calSelectedDate = ymd(new Date());
+
+function renderCalendar(){
+  const grid = document.getElementById('calGrid');
+  const label = document.getElementById('calLabel');
+  if(!grid || !label) return;
+
+  const year = calMonth.getFullYear();
+  const month = calMonth.getMonth();
+  label.textContent = calMonth.toLocaleDateString('th-TH', {month:'long', year:'numeric'});
+
+  const firstDow = new Date(year, month, 1).getDay(); // 0 = อาทิตย์
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+  const todayStr = ymd(new Date());
+  const dow = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+  let html = dow.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const totalCells = Math.ceil((firstDow + daysInMonth) / 7) * 7;
+
+  for(let i=0;i<totalCells;i++){
+    const dayNum = i - firstDow + 1;
+    let cellDate;
+    let otherMonth = false;
+    if(dayNum < 1){
+      cellDate = new Date(year, month-1, daysInPrevMonth + dayNum);
+      otherMonth = true;
+    } else if(dayNum > daysInMonth){
+      cellDate = new Date(year, month+1, dayNum - daysInMonth);
+      otherMonth = true;
+    } else {
+      cellDate = new Date(year, month, dayNum);
+    }
+    const dateStr = ymd(cellDate);
+    const dayBookings = bookings.filter(b=>b.useDate===dateStr && b.status!=='cancelled' && b.status!=='rejected');
+
+    const classes = ['cal-cell'];
+    if(otherMonth) classes.push('other-month');
+    if(dateStr===todayStr) classes.push('today');
+    if(dateStr===calSelectedDate) classes.push('selected');
+
+    html += `<div class="${classes.join(' ')}" data-date="${dateStr}">
+      <div class="cal-daynum">${cellDate.getDate()}</div>
+      ${dayBookings.length ? `<span class="cal-count">${dayBookings.length} คิว</span>` : ''}
+    </div>`;
+  }
+  grid.innerHTML = html;
+  renderCalDayList();
+}
+
+function renderCalDayList(){
+  const box = document.getElementById('calDayList');
+  if(!box) return;
+  const dayBookings = bookings.filter(b=>b.useDate===calSelectedDate);
+  const dLabel = new Date(calSelectedDate + 'T00:00:00').toLocaleDateString('th-TH', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  if(dayBookings.length===0){
+    box.innerHTML = `<p class="sub" style="margin:0 0 8px;">${dLabel}</p><div class="empty-state">ไม่มีการจองในวันนี้</div>`;
+    return;
+  }
+  box.innerHTML = `<p class="sub" style="margin:0 0 8px;">${dLabel} · ${dayBookings.length} รายการ</p>` +
+    dayBookings.map(b=>bookingCard(b, 'view')).join('');
+}
+
+document.getElementById('calPrev').addEventListener('click', ()=>{
+  calMonth.setMonth(calMonth.getMonth()-1);
+  renderCalendar();
+});
+document.getElementById('calNext').addEventListener('click', ()=>{
+  calMonth.setMonth(calMonth.getMonth()+1);
+  renderCalendar();
+});
+document.getElementById('calGrid').addEventListener('click', (e)=>{
+  const cell = e.target.closest('.cal-cell');
+  if(!cell) return;
+  calSelectedDate = cell.dataset.date;
+  renderCalendar();
+});
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.innerText = str==null ? '' : str;
+  return d.innerHTML;
+}
+
+/* ---------- Role switching ---------- */
+document.getElementById('roleSwitch').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.role-btn');
+  if(!btn) return;
+  const targetRole = btn.dataset.role;
+
+  if(ROLE_PIN[targetRole] && !unlockedRoles.has(targetRole)){
+    const entered = prompt('กรุณาใส่รหัสผ่านสำหรับเข้าหน้า "' + btn.textContent.trim() + '"');
+    if(entered === null) return; // กดยกเลิก
+    if(entered !== ROLE_PIN[targetRole]){
+      alert('รหัสผ่านไม่ถูกต้อง');
+      return;
+    }
+    unlockedRoles.add(targetRole);
+  }
+
+  role = targetRole;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.toggle('active', b===btn));
+  renderRole();
+  renderFleet();
+});
+
+function renderRole(){
+  const view = document.getElementById('roleView');
+  if(role==='requester') view.innerHTML = requesterHTML();
+  else if(role==='approver') view.innerHTML = approverHTML();
+  else view.innerHTML = officerHTML();
+
+  if(role==='requester') bindRequester();
+  else if(role==='approver') bindApprover();
+  else bindOfficer();
+}
+
+/* ================= REQUESTER ================= */
+function requesterHTML(){
+  const vehicleTypeOptions = [...new Set(vehicles.map(v=>v.type))];
+  return `
+  <div class="panel">
+    <h2>ยื่นขอใช้รถ</h2>
+    <p class="sub">กรอกแทนใบขอใช้รถกระดาษ — ส่งแล้วรออนุมัติจากหัวหน้า section ก่อน</p>
+    <form id="reqForm">
+      <div class="form-grid">
+        <div class="field"><label>ชื่อผู้ขอ *</label><input type="text" id="f_name" required></div>
+        <div class="field"><label>แผนก *</label><input type="text" id="f_dept" required></div>
+        <div class="field"><label>เบอร์โทร</label><input type="text" id="f_phone"></div>
+        <div class="field">
+          <label>ประเภทรถ *</label>
+          <select id="f_vtype" required>
+            ${vehicleTypeOptions.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('')}
+            <option value="อื่นๆ">อื่นๆ (ระบุในรายละเอียด)</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label>การขอใช้รถ *</label>
+          <div class="radio-row">
+            <label><input type="radio" name="f_urgency" value="จองล่วงหน้า" checked> จองล่วงหน้า (อย่างน้อย 2 วัน)</label>
+            <label><input type="radio" name="f_urgency" value="เร่งด่วน"> เร่งด่วน (อย่างน้อย 1 ชม.)</label>
+          </div>
+        </div>
+        <div class="field"><label>วันที่ใช้รถ *</label><input type="date" id="f_date" required></div>
+        <div class="field">
+          <label>เวลา (24 ชม.) *</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <select id="f_time_h" required style="flex:1;"></select>
+            <span class="mono" style="color:var(--muted);">:</span>
+            <select id="f_time_m" required style="flex:1;"></select>
+            <span class="mono" style="color:var(--muted);font-size:12.5px;">น.</span>
+          </div>
+        </div>
+        <div class="field"><label>ต้นทาง *</label><input type="text" id="f_from" required></div>
+        <div class="field"><label>ปลายทาง *</label><input type="text" id="f_to" required></div>
+        <div class="field"><label>จำนวนผู้โดยสาร</label><input type="number" id="f_pax" min="0" value="1"></div>
+        <div class="field span2">
+          <label>รายละเอียดของการขอใช้รถ (JOB / SUBJOB ถ้ามี)</label>
+          <textarea id="f_details"></textarea>
+        </div>
+      </div>
+      <button type="submit" class="primary-btn">ส่งคำขอ</button>
+      <div class="msg" id="reqMsg"></div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h2>คำขอของฉัน</h2>
+    <p class="sub">พิมพ์ชื่อที่ใช้ตอนยื่นคำขอ เพื่อดูสถานะ</p>
+    <div class="name-gate">
+      <input type="text" id="myName" placeholder="พิมพ์ชื่อผู้ขอ เช่น ธนัชพร คงศักดิ์">
+      <button class="primary-btn" style="margin-top:0" onclick="renderMyRequests()">ค้นหา</button>
+    </div>
+    <div id="myRequests"></div>
+  </div>
+  `;
+}
+function bindRequester(){
+  const today = new Date();
+  const d = document.getElementById('f_date');
+  if(d) d.min = ymd(today);
+  const hSel = document.getElementById('f_time_h');
+  const mSel = document.getElementById('f_time_m');
+  if(hSel && mSel){
+    hSel.innerHTML = '<option value="">ชม.</option>' +
+      Array.from({length:24}, (_,i)=>String(i).padStart(2,'0')).map(h=>`<option value="${h}">${h}</option>`).join('');
+    mSel.innerHTML = '<option value="">นาที</option>' +
+      ['00','15','30','45'].map(m=>`<option value="${m}">${m}</option>`).join('');
+  }
+  const form = document.getElementById('reqForm');
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const urgencyEl = form.querySelector('input[name=f_urgency]:checked');
+    const hVal = document.getElementById('f_time_h').value;
+    const mVal = document.getElementById('f_time_m').value;
+    if(!hVal || !mVal){
+      const msg = document.getElementById('reqMsg');
+      msg.textContent = 'กรุณาเลือกเวลาให้ครบ (ชั่วโมงและนาที)';
+      msg.className = 'msg show err';
+      return;
+    }
+    const booking = {
+      id: uid('bk'),
+      createdAt: new Date().toISOString(),
+      requesterName: document.getElementById('f_name').value.trim(),
+      department: document.getElementById('f_dept').value.trim(),
+      phone: document.getElementById('f_phone').value.trim(),
+      vehicleType: document.getElementById('f_vtype').value,
+      urgency: urgencyEl.value,
+      useDate: document.getElementById('f_date').value,
+      useTime: hVal + ':' + mVal,
+      fromLoc: document.getElementById('f_from').value.trim(),
+      toLoc: document.getElementById('f_to').value.trim(),
+      pax: document.getElementById('f_pax').value,
+      details: document.getElementById('f_details').value.trim(),
+      status: 'pending_approval',
+      approverName: null, approvedAt: null, rejectReason: null,
+      assignedVehicleId: null, assignedVehiclePlate: null, driverName: null, officerName: null, assignedAt: null,
+      cancelReason: null, cancelledBy: null
+    };
+    bookings.unshift(booking);
+    await saveBookings();
+    notifyNewBooking(booking); // แจ้งเตือนอีเมล ไม่ต้องรอผลลัพธ์ก่อนแจ้งผู้ใช้
+    const msg = document.getElementById('reqMsg');
+    msg.textContent = 'ส่งคำขอเรียบร้อย รอหัวหน้า section อนุมัติ';
+    msg.className = 'msg show ok';
+    form.reset();
+    document.getElementById('myName').value = booking.requesterName;
+    renderMyRequests();
+  });
+}
+function renderMyRequests(){
+  const name = document.getElementById('myName').value.trim();
+  const box = document.getElementById('myRequests');
+  if(!name){ box.innerHTML = '<div class="empty-state">พิมพ์ชื่อเพื่อดูคำขอของคุณ</div>'; return; }
+  const mine = bookings.filter(b => b.requesterName && b.requesterName.toLowerCase() === name.toLowerCase());
+  if(mine.length===0){ box.innerHTML = '<div class="empty-state">ยังไม่พบคำขอของชื่อนี้</div>'; return; }
+  box.innerHTML = mine.map(b=>bookingCard(b, 'requester')).join('');
+  bindCancelButtons();
+}
+
+/* ================= APPROVER ================= */
+function approverHTML(){
+  const pending = bookings.filter(b=>b.status==='pending_approval');
+  const decided = bookings.filter(b=>['approved','assigned','completed','rejected'].includes(b.status));
+  return `
+  <div class="panel">
+    <h2>รออนุมัติ (${pending.length})</h2>
+    <p class="sub">ระบุชื่อหัวหน้า section ก่อนกดอนุมัติ/ไม่อนุมัติ</p>
+    <div class="field" style="max-width:320px;margin-bottom:14px;">
+      <label>ชื่อผู้อนุมัติ</label>
+      <input type="text" id="approverName" placeholder="ชื่อ-นามสกุล หัวหน้า section" value="ช่างหญิงสุภาธินี อุ่นเรือน">
+    </div>
+    <div id="pendingList">
+      ${pending.length ? pending.map(b=>bookingCard(b,'approver')).join('') : '<div class="empty-state">ไม่มีคำขอรออนุมัติ</div>'}
+    </div>
+  </div>
+  <div class="panel">
+    <h2>ประวัติที่ตัดสินใจแล้ว</h2>
+    <div>
+      ${decided.length ? decided.slice(0,12).map(b=>bookingCard(b,'view')).join('') : '<div class="empty-state">ยังไม่มีประวัติ</div>'}
+    </div>
+  </div>
+  `;
+}
+function bindApprover(){
+  const box = document.getElementById('pendingList');
+  if(!box) return;
+  box.addEventListener('click', async (e)=>{
+    const approveBtn = e.target.closest('[data-approve]');
+    const rejectBtn = e.target.closest('[data-reject]');
+    const name = document.getElementById('approverName').value.trim();
+    if(!name && (approveBtn || rejectBtn)){
+      alert('กรุณาพิมพ์ชื่อผู้อนุมัติก่อน');
+      return;
+    }
+    if(approveBtn){
+      const b = bookings.find(x=>x.id===approveBtn.dataset.approve);
+      b.status = 'approved';
+      b.approverName = name;
+      b.approvedAt = new Date().toISOString();
+      await saveBookings();
+      renderRole();
+    }
+    if(rejectBtn){
+      const reason = prompt('เหตุผลที่ไม่อนุมัติ:');
+      if(reason===null) return;
+      const b = bookings.find(x=>x.id===rejectBtn.dataset.reject);
+      b.status = 'rejected';
+      b.approverName = name;
+      b.rejectReason = reason;
+      await saveBookings();
+      renderRole();
+    }
+  });
+}
+
+/* ================= OFFICER ================= */
+function officerHTML(){
+  const toAssign = bookings.filter(b=>b.status==='approved');
+  const inUse = bookings.filter(b=>b.status==='assigned');
+  const pendingApproval = bookings.filter(b=>b.status==='pending_approval');
+  return `
+  <div class="panel">
+    <h2>รอจัดรถ (${toAssign.length})</h2>
+    <p class="sub">อนุมัติจากหัวหน้า section แล้ว รอเจ้าหน้าที่จัดรถ+คนขับ</p>
+    <div id="assignList">
+      ${toAssign.length ? toAssign.map(b=>bookingCard(b,'officer-assign')).join('') : '<div class="empty-state">ไม่มีรายการรอจัดรถ</div>'}
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>กำลังใช้งาน (${inUse.length})</h2>
+    <div id="inUseList">
+      ${inUse.length ? inUse.map(b=>bookingCard(b,'officer-complete')).join('') : '<div class="empty-state">ไม่มีรถที่กำลังใช้งานอยู่</div>'}
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>รออนุมัติ (${pendingApproval.length})</h2>
+    <p class="sub">ดูสถานะเฉยๆ — ยังจัดรถไม่ได้จนกว่าหัวหน้า section จะอนุมัติ</p>
+    <div>${pendingApproval.length ? pendingApproval.map(b=>bookingCard(b,'view')).join('') : '<div class="empty-state">ไม่มีรายการ</div>'}</div>
+  </div>
+
+  <div class="panel">
+    <h2>รายการที่จบครบทุกขั้นตอน (จอง → อนุมัติ → จัดรถ → คืนรถ)</h2>
+    <p class="sub">พิมพ์เป็น PDF เพื่อเก็บเป็นหลักฐาน — เลือกช่วงวันที่ใช้รถ (เว้นว่างได้ถ้าต้องการทั้งหมด)</p>
+    <div class="form-grid" style="margin-bottom:12px;">
+      <div class="field">
+        <label>ตั้งแต่วันที่ใช้รถ</label>
+        <input type="date" id="reportFrom">
+      </div>
+      <div class="field">
+        <label>ถึงวันที่ใช้รถ</label>
+        <input type="date" id="reportTo">
+      </div>
+    </div>
+    <button class="primary-btn" onclick="printCompletedReport()">🖨️ พิมพ์รายการที่เสร็จสิ้นเป็น PDF</button>
+  </div>
+
+  <div class="panel">
+    <h2>จัดการรายการรถ</h2>
+    <p class="sub">เพิ่ม/แก้ไข/ลบรถในระบบ (ข้อมูลตัวอย่างเริ่มต้น แก้ไขได้ตามจริง)</p>
+    <div id="fleetManageList"></div>
+    <div class="fleet-manage-item">
+      <input type="text" id="newPlate" placeholder="ทะเบียนรถ">
+      <input type="text" id="newType" placeholder="ประเภทรถ เช่น ปิคอัพ 4 ล้อ">
+      <button class="primary-btn" style="margin-top:0" onclick="addVehicle()">+ เพิ่มรถ</button>
+    </div>
+  </div>
+  `;
+}
+function bindOfficer(){
+  renderFleetManageList();
+  bindAssignButtons();
+  bindCompleteButtons();
+}
+function renderFleetManageList(){
+  const box = document.getElementById('fleetManageList');
+  if(!box) return;
+  box.innerHTML = vehicles.map(v=>`
+    <div class="fleet-manage-item">
+      <input type="text" value="${escapeHtml(v.plate)}" onchange="updateVehicle('${v.id}','plate',this.value)">
+      <input type="text" value="${escapeHtml(v.type)}" onchange="updateVehicle('${v.id}','type',this.value)">
+      <select onchange="updateVehicle('${v.id}','status',this.value)">
+        <option value="available" ${v.status==='available'?'selected':''}>ว่าง</option>
+        <option value="busy" ${v.status==='busy'?'selected':''}>กำลังใช้งาน</option>
+        <option value="maintenance" ${v.status==='maintenance'?'selected':''}>ซ่อมบำรุง</option>
+      </select>
+      <button class="remove-x" onclick="removeVehicle('${v.id}')">×</button>
+    </div>
+  `).join('');
+}
+async function addVehicle(){
+  const plate = document.getElementById('newPlate').value.trim();
+  const type = document.getElementById('newType').value.trim();
+  if(!plate || !type){ alert('กรอกทะเบียนและประเภทรถให้ครบ'); return; }
+  vehicles.push({id:uid('veh'), plate, type, status:'available'});
+  await saveVehicles();
+  document.getElementById('newPlate').value='';
+  document.getElementById('newType').value='';
+  renderFleetManageList();
+  renderFleet();
+}
+async function updateVehicle(id, field, value){
+  const v = vehicles.find(x=>x.id===id);
+  if(!v) return;
+  v[field] = value;
+  await saveVehicles();
+  renderFleet();
+}
+async function removeVehicle(id){
+  if(!confirm('ลบรถคันนี้ออกจากระบบ?')) return;
+  vehicles = vehicles.filter(x=>x.id!==id);
+  await saveVehicles();
+  renderFleetManageList();
+  renderFleet();
+}
+
+function printCompletedReport(){
+  const fromEl = document.getElementById('reportFrom');
+  const toEl = document.getElementById('reportTo');
+  const from = fromEl && fromEl.value ? fromEl.value : '';
+  const to = toEl && toEl.value ? toEl.value : '';
+
+  let rows = bookings.filter(b => b.status === 'completed');
+  if(from) rows = rows.filter(b => b.useDate >= from);
+  if(to) rows = rows.filter(b => b.useDate <= to);
+  rows = rows.slice().sort((a,b) => (a.useDate || '').localeCompare(b.useDate || ''));
+
+  if(rows.length === 0){
+    alert('ไม่พบรายการที่เสร็จสิ้นในช่วงที่เลือก');
+    return;
+  }
+
+  const rangeLabel = (from || to)
+    ? `ช่วงวันที่ใช้รถ: ${from ? from : 'เริ่มต้น'} ถึง ${to ? to : 'ปัจจุบัน'}`
+    : 'ทุกช่วงเวลา';
+
+  const tableRows = rows.map((b, i) => `
+    <tr>
+      <td class="c">${i+1}</td>
+      <td>${escapeHtml(b.requesterName || '-')}<br><span class="muted">${escapeHtml(b.department || '-')}</span></td>
+      <td>${escapeHtml(b.useDate || '-')}<br><span class="muted">${escapeHtml(b.useTime || '-')} น.</span></td>
+      <td>${escapeHtml(b.fromLoc || '-')} → ${escapeHtml(b.toLoc || '-')}</td>
+      <td class="c">${escapeHtml(String(b.pax ?? '-'))}</td>
+      <td>${escapeHtml(b.approverName || '-')}</td>
+      <td>${escapeHtml(b.assignedVehiclePlate || '-')}<br><span class="muted">${escapeHtml(b.driverName || '-')}</span></td>
+      <td>${escapeHtml(b.officerName || '-')}</td>
+    </tr>`).join('');
+
+  const printedAt = new Date().toLocaleString('th-TH', {dateStyle:'long', timeStyle:'short'});
+
+  const html = `<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8">
+<title>รายงานการจองรถที่เสร็จสิ้น</title>
+<style>
+  @page { size: A4 landscape; margin: 14mm; }
+  body{ font-family:'Sarabun','TH Sarabun New',sans-serif; color:#182430; font-size:12.5px; }
+  h1{ font-size:17px; margin:0 0 2px; }
+  h2{ font-size:13px; margin:0 0 2px; font-weight:600; color:#5C6B7A; }
+  .meta{ font-size:11.5px; color:#5C6B7A; margin-bottom:14px; }
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ border:1px solid #b9c2cc; padding:5px 7px; text-align:left; vertical-align:top; }
+  th{ background:#eceff2; font-size:11.5px; }
+  td.c, th.c{ text-align:center; }
+  .muted{ color:#5C6B7A; font-size:11px; }
+  .sign-row{ display:flex; justify-content:space-between; margin-top:34px; }
+  .sign-box{ text-align:center; width:220px; font-size:12px; }
+  .sign-line{ margin-top:36px; border-top:1px solid #182430; padding-top:4px; }
+  .footer-note{ margin-top:10px; font-size:10.5px; color:#5C6B7A; }
+  @media print { .no-print{ display:none; } }
+</style>
+</head><body>
+  <h1>รายงานรายการจองรถที่เสร็จสิ้นครบทุกขั้นตอน (จอง → อนุมัติ → จัดรถ → คืนรถ)</h1>
+  <h2>ระบบจองรถออนไลน์ · ITD Marine J.0444 · Transport</h2>
+  <div class="meta">${rangeLabel} &nbsp;|&nbsp; จำนวน ${rows.length} รายการ &nbsp;|&nbsp; พิมพ์เมื่อ ${printedAt}</div>
+  <table>
+    <thead><tr>
+      <th class="c">ลำดับ</th>
+      <th>ผู้ขอใช้รถ / แผนก</th>
+      <th>วันที่-เวลาใช้รถ</th>
+      <th>เส้นทาง</th>
+      <th class="c">ผู้โดยสาร</th>
+      <th>ผู้อนุมัติ</th>
+      <th>รถ / คนขับ</th>
+      <th>เจ้าหน้าที่จัดรถ</th>
+    </tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+  <div class="sign-row">
+    <div class="sign-box">ผู้จัดทำรายงาน<div class="sign-line">(............................................)</div></div>
+    <div class="sign-box">ผู้ตรวจสอบ<div class="sign-line">(............................................)</div></div>
+  </div>
+  <div class="footer-note">เอกสารนี้พิมพ์จากระบบจองรถออนไลน์ ITD Marine J.0444 เพื่อเก็บเป็นหลักฐานการใช้รถที่ดำเนินการครบทุกขั้นตอนแล้วเท่านั้น (สถานะ "เสร็จสิ้น")</div>
+  <${'script'}>window.onload = function(){ window.print(); };<${'/script'}>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if(!win){
+    alert('เบราว์เซอร์บล็อกการเปิดหน้าต่างใหม่ กรุณาอนุญาต pop-up สำหรับหน้านี้แล้วลองอีกครั้ง');
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+}
+
+function bindAssignButtons(){
+  const box = document.getElementById('assignList');
+  if(!box) return;
+  box.addEventListener('change', (e)=>{
+    const sel = e.target.closest('.assign-driver-select');
+    if(!sel) return;
+    const card = sel.closest('.booking-card');
+    const customInput = card.querySelector('.assign-driver-custom');
+    if(sel.value === '__custom__'){
+      customInput.style.display = '';
+      customInput.focus();
+    } else {
+      customInput.style.display = 'none';
+      customInput.value = '';
+    }
+  });
+  box.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-assign]');
+    if(!btn) return;
+    const card = btn.closest('.booking-card');
+    const vehicleSel = card.querySelector('.assign-vehicle');
+    const driverSel = card.querySelector('.assign-driver-select');
+    const driverCustom = card.querySelector('.assign-driver-custom');
+    const officerInput = card.querySelector('.assign-officer');
+    const vehicleId = vehicleSel.value;
+    const driver = driverSel.value === '__custom__' ? driverCustom.value.trim() : driverSel.value;
+    const officer = officerInput.value.trim();
+    if(!driver){ alert('เลือกหรือกรอกชื่อคนขับ'); return; }
+    if(!vehicleId){ alert('เลือกรถก่อน'); return; }
+    if(!officer){ alert('กรอกชื่อเจ้าหน้าที่ทรานสปอร์ต'); return; }
+    const b = bookings.find(x=>x.id===btn.dataset.assign);
+    const v = vehicles.find(x=>x.id===vehicleId);
+    b.status = 'assigned';
+    b.assignedVehicleId = vehicleId;
+    b.assignedVehiclePlate = v ? v.plate : '';
+    b.driverName = driver;
+    b.officerName = officer;
+    b.assignedAt = new Date().toISOString();
+    if(v) v.status = 'busy';
+    await saveBookings();
+    await saveVehicles();
+    renderRole();
+    renderFleet();
+  });
+}
+function bindCompleteButtons(){
+  const box = document.getElementById('inUseList');
+  if(!box) return;
+  box.addEventListener('click', async (e)=>{
+    const completeBtn = e.target.closest('[data-complete]');
+    const cancelBtn = e.target.closest('[data-cancel]');
+    if(completeBtn){
+      const b = bookings.find(x=>x.id===completeBtn.dataset.complete);
+      b.status = 'completed';
+      const v = vehicles.find(x=>x.id===b.assignedVehicleId);
+      if(v) v.status = 'available';
+      await saveBookings();
+      await saveVehicles();
+      renderRole();
+      renderFleet();
+    }
+    if(cancelBtn){
+      const reason = prompt('เหตุผลที่ยกเลิก:');
+      if(reason===null) return;
+      const b = bookings.find(x=>x.id===cancelBtn.dataset.cancel);
+      b.status = 'cancelled';
+      b.cancelReason = reason;
+      const v = vehicles.find(x=>x.id===b.assignedVehicleId);
+      if(v) v.status = 'available';
+      await saveBookings();
+      await saveVehicles();
+      renderRole();
+      renderFleet();
+    }
+  });
+}
+function bindCancelButtons(){
+  const box = document.getElementById('myRequests');
+  if(!box) return;
+  box.addEventListener('click', async (e)=>{
+    const cancelBtn = e.target.closest('[data-selfcancel]');
+    if(!cancelBtn) return;
+    const reason = prompt('เหตุผลที่ยกเลิก:');
+    if(reason===null) return;
+    const b = bookings.find(x=>x.id===cancelBtn.dataset.selfcancel);
+    b.status = 'cancelled';
+    b.cancelReason = reason;
+    b.cancelledBy = b.requesterName;
+    if(b.assignedVehicleId){
+      const v = vehicles.find(x=>x.id===b.assignedVehicleId);
+      if(v) v.status = 'available';
+      await saveVehicles();
+    }
+    await saveBookings();
+    renderMyRequests();
+    renderFleet();
+  });
+}
+
+/* ---------- Shared booking card renderer ---------- */
+function bookingCard(b, mode){
+  const st = STATUS_LABEL[b.status] || {text:b.status, cls:''};
+  const availableVehicles = vehicles.filter(v=>v.status==='available' &&
+    (b.vehicleType==='อื่นๆ' || v.type===b.vehicleType));
+  const vehicleOptions = vehicles.filter(v=>v.status!=='maintenance');
+
+  let actions = '';
+  if(mode==='approver'){
+    actions = `
+      <div class="bk-actions">
+        <button class="primary-btn" data-approve="${b.id}">อนุมัติ</button>
+        <button class="ghost-btn" data-reject="${b.id}">ไม่อนุมัติ</button>
+      </div>`;
+  } else if(mode==='officer-assign'){
+    actions = `
+      <div class="assign-row">
+        <select class="assign-vehicle">
+          <option value="">— เลือกรถ (ประเภท: ${escapeHtml(b.vehicleType)}) —</option>
+          ${vehicleOptions.map(v=>`<option value="${v.id}" ${v.status!=='available'?'disabled':''}>${escapeHtml(v.plate)} · ${escapeHtml(v.type)} ${v.status!=='available' ? '('+VSTATUS_LABEL[v.status].text+')' : ''}</option>`).join('')}
+        </select>
+        <select class="assign-driver-select">
+          <option value="">— เลือกคนขับ —</option>
+          ${DRIVER_LIST.map((d,i)=>`<option value="${escapeHtml(d)}">${i+1}. ${escapeHtml(d)}</option>`).join('')}
+          <option value="__custom__">${DRIVER_LIST.length+1}. ระบุเอง...</option>
+        </select>
+        <input type="text" class="assign-driver-custom" placeholder="พิมพ์ชื่อคนขับ" style="display:none;">
+        <input type="text" class="assign-officer" placeholder="ชื่อเจ้าหน้าที่ทรานสปอร์ต">
+      </div>
+      <div class="bk-actions">
+        <button class="primary-btn" data-assign="${b.id}">ยืนยันจัดรถ</button>
+      </div>`;
+    if(availableVehicles.length===0){
+      actions = `<div class="msg show err" style="margin-top:10px;">ไม่มีรถประเภท "${escapeHtml(b.vehicleType)}" ว่างในขณะนี้</div>` + actions;
+    }
+  } else if(mode==='officer-complete'){
+    actions = `
+      <div class="bk-actions">
+        <button class="primary-btn" data-complete="${b.id}">เสร็จสิ้น / คืนรถ</button>
+        <button class="ghost-btn" data-cancel="${b.id}">ยกเลิก</button>
+      </div>`;
+  } else if(mode==='requester' && (b.status==='pending_approval' || b.status==='approved')){
+    actions = `
+      <div class="bk-actions">
+        <button class="ghost-btn" data-selfcancel="${b.id}">ยกเลิกคำขอนี้</button>
+      </div>`;
+  }
+
+  const noteBits = [];
+  if(b.status==='rejected' && b.rejectReason) noteBits.push('เหตุผลไม่อนุมัติ: ' + escapeHtml(b.rejectReason));
+  if(b.status==='cancelled' && b.cancelReason) noteBits.push('เหตุผลยกเลิก: ' + escapeHtml(b.cancelReason));
+  if(b.approverName && b.status!=='pending_approval') noteBits.push('อนุมัติโดย: ' + escapeHtml(b.approverName));
+  if(b.assignedVehiclePlate) noteBits.push(`รถที่จัด: ${escapeHtml(b.assignedVehiclePlate)}${b.driverName ? ' · คนขับ: '+escapeHtml(b.driverName) : ''}${b.officerName ? ' · จัดโดย: '+escapeHtml(b.officerName) : ''}`);
+
+  return `
+  <div class="booking-card">
+    <div class="bk-head">
+      <div>
+        <div class="bk-title">${escapeHtml(b.requesterName)} · ${escapeHtml(b.department)}</div>
+        <div class="bk-sub">${escapeHtml(b.vehicleType)} · ${escapeHtml(b.urgency)} · ยื่นเมื่อ ${formatDate(b.createdAt)}</div>
+      </div>
+      <span class="badge ${st.cls}">${st.text}</span>
+    </div>
+    <div class="bk-detail-grid">
+      <div><span>วันที่ใช้</span>${escapeHtml(b.useDate)} ${escapeHtml(b.useTime)} น.</div>
+      <div><span>ต้นทาง</span>${escapeHtml(b.fromLoc)}</div>
+      <div><span>ปลายทาง</span>${escapeHtml(b.toLoc)}</div>
+      <div><span>ผู้โดยสาร</span>${escapeHtml(b.pax)} คน</div>
+      <div><span>โทร</span>${escapeHtml(b.phone||'-')}</div>
+    </div>
+    ${b.details ? `<div class="bk-note"><strong>รายละเอียด:</strong> ${escapeHtml(b.details)}</div>` : ''}
+    ${noteBits.length ? `<div class="bk-note">${noteBits.join('<br>')}</div>` : ''}
+    ${actions}
+  </div>`;
+}
+function formatDate(iso){
+  try{
+    const d = new Date(iso);
+    return d.toLocaleDateString('th-TH', {day:'2-digit', month:'short', year:'2-digit'}) + ' ' +
+           d.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+  }catch(e){ return iso; }
+}
+
+/* ---------- Init ---------- */
+async function init(){
+  if(!dbReady){
+    document.getElementById('setupWarning').style.display = 'block';
+  }
+  document.querySelector('.role-btn[data-role="requester"]').classList.add('active');
+  await loadVehicles();
+  await loadBookings();
+  renderFleet();
+  renderRole();
+  setInterval(()=>refreshAll(false), 15000);
+}
+init();
+</script>
+
+<!--
+================================================================================
+สำคัญ: ต้องแก้ไข Google Apps Script (ฝั่งเซิร์ฟเวอร์) เพิ่ม เพื่อให้ส่งอีเมลได้จริง
+================================================================================
+ไฟล์ HTML นี้ส่งข้อมูลไปให้ Apps Script เท่านั้น แต่การ "ส่งอีเมล" ต้องทำฝั่ง
+Apps Script (เพราะเบราว์เซอร์ส่งอีเมลเองไม่ได้) ให้เปิดโปรเจกต์ Apps Script เดิม
+ที่ใช้อยู่ (ตัวที่ deploy เป็น Web App แล้วเอา URL มาใส่ใน APPS_SCRIPT_URL ด้านบน)
+แล้วเพิ่มโค้ดส่วนนี้ไว้ "บนสุด" ของฟังก์ชัน doPost(e) ก่อนโค้ดเดิมที่จัดการ key/value:
+
+  function doPost(e) {
+    var data = JSON.parse(e.postData.contents);
+
+    // ===== เพิ่มส่วนนี้: ส่งอีเมลแจ้งเตือนเมื่อมีคำขอใช้รถใหม่ =====
+    if (data.action === 'notifyNewBooking') {
+      try {
+        var b = data.booking || {};
+        var to = data.to || 'eqandcostcontrol@gmail.com';
+        var subject = 'มีคำขอใช้รถใหม่ - ' + (b.requesterName || '-');
+        var body =
+          'มีคำขอใช้รถใหม่เข้ามาในระบบจองรถออนไลน์ ITD Marine J.0444\n\n' +
+          'ผู้ขอ: ' + (b.requesterName || '-') + '\n' +
+          'แผนก: ' + (b.department || '-') + '\n' +
+          'เบอร์โทร: ' + (b.phone || '-') + '\n' +
+          'ประเภทรถ: ' + (b.vehicleType || '-') + '\n' +
+          'ความเร่งด่วน: ' + (b.urgency || '-') + '\n' +
+          'วันที่/เวลาที่ใช้: ' + (b.useDate || '-') + ' ' + (b.useTime || '-') + '\n' +
+          'ต้นทาง: ' + (b.fromLoc || '-') + '\n' +
+          'ปลายทาง: ' + (b.toLoc || '-') + '\n' +
+          'จำนวนผู้โดยสาร: ' + (b.pax || '-') + '\n' +
+          'รายละเอียด: ' + (b.details || '-') + '\n';
+        MailApp.sendEmail(to, subject, body);
+        return ContentService.createTextOutput(JSON.stringify({ok:true}))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService.createTextOutput(JSON.stringify({ok:false, error:String(err)}))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    // ===== จบส่วนที่เพิ่ม — ต่อจากนี้คือโค้ดเดิมของคุณ (บันทึก key/value ฯลฯ) =====
+
+    ... โค้ดเดิมของคุณด้านล่างนี้ตามปกติ ...
+  }
+
+หลังแก้ไขแล้ว ต้อง Deploy ใหม่: เมนู Deploy > Manage deployments > กดไอคอนดินสอ (Edit)
+ที่ deployment เดิม > Version เลือก "New version" > Deploy ถึงจะมีผลจริง
+(ถ้า deploy เป็น Web App ใหม่ URL จะเปลี่ยน ต้องเอา URL ใหม่มาใส่ใน APPS_SCRIPT_URL ด้วย)
+
+หมายเหตุ: Gmail ส่วนตัวส่งอีเมลได้ประมาณ 100 ฉบับ/วัน ผ่าน MailApp ถ้าใช้บัญชี
+Google Workspace ขององค์กรจะส่งได้มากกว่านั้น
+================================================================================
+-->
+</body>
+</html>
